@@ -413,6 +413,7 @@ def pyinstaller_compile():
         "--distpath", DIST_DIR if ONEFILE else PYINST_OUTDIR,
         "--workpath", work_dir,
         "--noconfirm",
+        "--noupx",
     ]
 
     for pkg in collect_all:

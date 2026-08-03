@@ -13,6 +13,8 @@ client/data/voice_messages/
 client/data/log/
 client/logs/
 /log/
+# Dev-mode runtime data at repo root (data_path() in dev resolves here)
+/data/
 
 
 # Bundled Node.js runtime (binary distribution, ~50 MB)
