@@ -73,6 +73,25 @@ PYTHON_CMD      = os.path.join(VENV_DIR, "Scripts", "python.exe")
 GCC_CMD         = "gcc"
 WINDRES_CMD     = "windres"
 
+# UPX executable directory (used for optional binary compression).
+# UPX ships via WinGet under AppData; if missing, falls back to PATH lookup.
+UPX_DIR = os.path.join(
+    os.environ.get("LOCALAPPDATA", r"C:\Users\Matheus\AppData\Local"),
+    "Microsoft", "WinGet", "Packages",
+    "UPX.UPX_Microsoft.Winget.Source_8wekyb3d8bbwe", "upx-5.2.0-win64",
+)
+# Binaries that UPX must NOT compress. Runtime-critical interpreter/extensions:
+# Python may run a crash a UPX-packed python<ver>.dll / extension module.
+UPX_EXCLUDE = [
+    "python314.dll",
+    "python3.dll",
+    "*.pyd",
+    # accessible_output2 loads these screen-reader DLLs via ctypes
+    # (libloader). UPX packing corrupts ZDSRAPI_x64.dll (crashes the app
+    # with an access violation on startup), so leave them uncompressed.
+    "accessible_output2/lib/*.dll",
+]
+
 # PyInstaller output directories
 PYINST_OUTDIR   = os.path.join(BUILD_DIR, "pyinstaller_out")
 PYINST_APP_DIR  = os.path.join(PYINST_OUTDIR, "ZappInfinit")
@@ -100,11 +119,13 @@ SITE_PACKAGES = os.path.join(VENV_DIR, "Lib", "site-packages")
 SOUND_LIB_X64 = os.path.join(SITE_PACKAGES, "sound_lib", "lib", "x64")
 AO2_LIB       = os.path.join(SITE_PACKAGES, "accessible_output2", "lib")
 
-# libopus-0.dll — required by client/core/ogg_opus.py for OGG Opus encoding.
-# libopus is a native C library (NOT a Python package).  On Windows it ships
-# with MSYS2 (mingw-w64-ucrt-x86_64-opus) or can be installed via Chocolatey /
-# vcpkg.  build.py searches common locations; if not found it auto-downloads the
-# DLL from the MSYS2 package mirror and saves it to client/lib/.
+# libopus-0.dll — required at runtime by sound_lib's BASS_PluginLoad of
+# bassopus.dll (OGG Opus playback) and by the bundled ffmpeg for voice
+# message encoding. libopus is a native C library (NOT a Python package).
+# On Windows it ships with MSYS2 (mingw-w64-ucrt-x86_64-opus) or can be
+# installed via Chocolatey / vcpkg.  build.py searches common locations; if
+# not found it auto-downloads the DLL from the MSYS2 package mirror and
+# saves it to client/lib/.
 
 def _find_opus_dll_on_disk():
     """Search known filesystem locations for libopus-0.dll / opus.dll."""
@@ -413,8 +434,17 @@ def pyinstaller_compile():
         "--distpath", DIST_DIR if ONEFILE else PYINST_OUTDIR,
         "--workpath", work_dir,
         "--noconfirm",
-        "--noupx",
     ]
+
+    # Enable UPX compression when the executable is available (and exclude the
+    # runtime-critical binaries). When UPX is not found, PyInstaller silently
+    # skips compression, so compression is best-effort.
+    if os.path.isdir(UPX_DIR) and os.path.isfile(os.path.join(UPX_DIR, "upx.exe")):
+        cmd += ["--upx-dir", UPX_DIR]
+        for pattern in UPX_EXCLUDE:
+            cmd += ["--upx-exclude", pattern]
+    else:
+        cmd += ["--noupx"]
 
     for pkg in collect_all:
         cmd += ["--collect-all", pkg]
@@ -500,7 +530,7 @@ def assemble_staging():
                 shutil.copy2(os.path.join(AO2_LIB, fname),
                              os.path.join(lib_dir, fname))
                 dll_count += 1
-    # libopus for OGG Opus encoding (client/core/ogg_opus.py)
+    # libopus-0.dll for OGG Opus playback (bassopus.dll dependency) + ffmpeg encoding
     if OPUS_DLL:
         shutil.copy2(OPUS_DLL, os.path.join(lib_dir, "libopus-0.dll"))
         dll_count += 1
@@ -510,7 +540,6 @@ def assemble_staging():
     # bassopus.dll for sound_lib BASS_PluginLoad
     _bassopus_candidates = [
         os.path.join(CLIENT_DIR, "lib", "bassopus.dll"),
-        os.path.join(CLIENT_DIR, "lib", "bass_opus.dll"),
     ]
     _bassopus_copied = False
     for _bsrc in _bassopus_candidates:

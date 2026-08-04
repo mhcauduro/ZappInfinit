@@ -2,6 +2,18 @@
 
 All notable changes to ZappInfinit are documented in this file. Updates are recorded here on every release.
 
+# V0.21.4.0beta
+
+## Build & Packaging
+* **UPX Compression Re-enabled:** Re-enabled UPX binary compression in `build.py` (was disabled by `--noupx`). The build now locates the WinGet-installed UPX toolchain and compresses the onedir collection while excluding the Python runtime DLLs (`python314.dll`, `python3.dll`), `.pyd` extension modules, and the `accessible_output2` screen-reader DLLs loaded via `ctypes` — UPX packing corrupts `ZDSRAPI_x64.dll` and crashes the app on startup with an access violation. Smaller installer/portable payload.
+
+## Audio
+* **BASS plugin resolution in dev mode:** `_load_bass_plugin()` now also searches `sound_lib`'s own bundled plugin directory (`sound_lib/external/paths.py` x64/x86), so `bass_aac.dll` resolves correctly in dev mode instead of only through the app-specific `client/lib` pair.
+* **BASS_ERROR_ALREADY treated as success:** A plugin that is already registered (because `pybassopus`/`pybass_aac` call `BASS_PluginLoad` at import time) no longer logs a misleading "not loaded" warning — the codec is available either way.
+* **Dead `bass_opus.dll` fallback removed:** `start()` no longer tries the non-existent `bass_opus.dll` as a second Opus plugin name; only the real `bassopus.dll` is attempted.
+
+---
+
 # V2026.06.21.1555
 
 ## Bug Fixes
