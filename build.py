@@ -100,6 +100,38 @@ SITE_PACKAGES = os.path.join(VENV_DIR, "Lib", "site-packages")
 SOUND_LIB_X64 = os.path.join(SITE_PACKAGES, "sound_lib", "lib", "x64")
 AO2_LIB       = os.path.join(SITE_PACKAGES, "accessible_output2", "lib")
 
+# DLLs loaded at runtime via ctypes must NOT be UPX-compressed — UPX rewrites
+# their PE headers/import tables, which breaks ctypes.WinDLL/CDLL loading and
+# the screen-reader bridges (NVDA/SAAPI/Window-Eyes/ZDSR/...) as well as the
+# BASS audio plugins. These are passed to PyInstaller as --upx-exclude names.
+UPX_EXCLUDE = [
+    # accessible_output2 screen-reader bridges
+    "nvdaControllerClient32.dll",
+    "nvdaControllerClient64.dll",
+    "dolapi.dll",
+    "SAAPI32.dll",
+    "ZDSRAPI.dll",
+    "ZDSRAPI_x64.dll",
+    "PCTKUSR.dll",
+    "PCTKUSR64.dll",
+    # sound_lib / BASS audio engine + plugins (loaded via ctypes/libloader)
+    "bass.dll",
+    "bass_aac.dll",
+    "bass_alac.dll",
+    "bass_fx.dll",
+    "bassalac.dll",
+    "bassenc.dll",
+    "bassflac.dll",
+    "bassmidi.dll",
+    "bassmix.dll",
+    "bassopus.dll",
+    "basswasapi.dll",
+    "basswma.dll",
+    "tags.dll",
+    # libopus — loaded via ctypes by client/core/ogg_opus.py
+    "libopus-0.dll",
+]
+
 # libopus-0.dll — required by client/core/ogg_opus.py for OGG Opus encoding.
 # libopus is a native C library (NOT a Python package).  On Windows it ships
 # with MSYS2 (mingw-w64-ucrt-x86_64-opus) or can be installed via Chocolatey /
@@ -419,6 +451,10 @@ def pyinstaller_compile():
         cmd += ["--collect-all", pkg]
 
     cmd += ["--paths", CLIENT_DIR]
+
+    # Keep ctypes-loaded DLLs out of UPX compression (see UPX_EXCLUDE above).
+    for upx_name in UPX_EXCLUDE:
+        cmd += ["--upx-exclude", upx_name]
 
     # In onefile mode, embed external resources as --add-data / --add-binary
     if ONEFILE:
