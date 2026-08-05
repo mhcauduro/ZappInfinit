@@ -1,6 +1,6 @@
 # ZappInfinit
 
-ZappInfinit is a **free, self-hosted desktop WhatsApp client for Windows**, built primarily for **accessibility for blind and low-vision users**.
+ZappInfinit is a **free, self-hosted, open-source desktop WhatsApp client for Windows**, built primarily for **accessibility for blind and low-vision users**.
 It is designed from the ground up to work with screen readers (NVDA, JAWS, Narrator) through [accessible-output2](https://github.com/accessibleapps/accessible_output2), with a fully keyboard-navigable interface built on plain wxPython controls rather than custom-drawn UI.
 
 The application is split into two processes that run together locally:
@@ -110,11 +110,4 @@ The resulting files are written to the `dist/` directory.
 
 ## License and Disclaimer
 
-ZappInfinit works by automating the WhatsApp Web interface and is not built on any official WhatsApp/Meta API. Use of this software is at your own risk. This project is not affiliated with, maintained by, or endorsed by Meta Platforms, Inc.
-
----
-
-## Contact
-
-* **Site:** https://matheuscauduro.com.br
-* **E-mail:** contato@matheuscauduro.com.br
+ZappInfinit is licensed under the GNU General Public License v3.0 (see [LICENSE](LICENSE)). It works by automating the WhatsApp Web interface and is not built on any official WhatsApp/Meta API. Use of this software is at your own risk. This project is not affiliated with, maintained by, or endorsed by Meta Platforms, Inc.

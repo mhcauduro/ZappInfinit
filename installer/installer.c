@@ -385,11 +385,11 @@ static void create_shortcut(const wchar_t *target, const wchar_t *link_path,
 /* ── Registry ─────────────────────────────────────────────────────────── */
 
 /* Version string embedded by build.py at compile time from
- * client/version.py's __version__ (-DZAPPINFIT_VERSION=L"..."), so
+ * client/version.py's __version__ (-DZAPPINFINIT_VERSION=L"..."), so
  * "Add or Remove Programs" shows the version that was actually installed
  * instead of a permanently-stale placeholder. */
-#ifndef ZAPPINFIT_VERSION
-#define ZAPPINFIT_VERSION L"0.0.0"
+#ifndef ZAPPINFINIT_VERSION
+#define ZAPPINFINIT_VERSION L"0.0.0"
 #endif
 
 static void register_uninstall(const wchar_t *install_dir,
@@ -427,7 +427,7 @@ static void register_uninstall(const wchar_t *install_dir,
                    (BYTE *)install_dir,
                    (DWORD)((wcslen(install_dir) + 1) * sizeof(wchar_t)));
     RegSetValueExW(hkey, L"DisplayVersion", 0, REG_SZ,
-                   (BYTE *)ZAPPINFIT_VERSION, (DWORD)sizeof(ZAPPINFIT_VERSION));
+                   (BYTE *)ZAPPINFINIT_VERSION, (DWORD)sizeof(ZAPPINFINIT_VERSION));
     RegSetValueExW(hkey, L"Publisher", 0, REG_SZ,
                    (BYTE *)L"ZappInfinit", sizeof(L"ZappInfinit"));
     DWORD one = 1;

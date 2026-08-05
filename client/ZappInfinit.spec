@@ -37,8 +37,8 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
-    ['C:\\ZappInfinit\\client\\main.py'],
-    pathex=['C:\\ZappInfinit\\client'],
+    ['C:\\Users\\Matheus\\programas\\python\\ZappInfinit\\client\\main.py'],
+    pathex=['C:\\Users\\Matheus\\programas\\python\\ZappInfinit\\client'],
     binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,

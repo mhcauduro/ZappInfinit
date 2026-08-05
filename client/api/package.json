@@ -37,6 +37,7 @@
   "packageManager": "yarn@4.14.1",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1019.0",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@wppconnect-team/wppconnect": "^2.2.6",
     "archiver": "^7.0.1",
     "axios": "^1.14.0",
@@ -58,8 +59,7 @@
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "unzipper": "^0.12.3",
-    "winston": "^3.19.0",
-    "@ffmpeg-installer/ffmpeg": "^1.1.0"
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",

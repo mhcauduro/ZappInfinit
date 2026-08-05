@@ -1,18 +1,6 @@
-# Changelog (ZappInfinit)
+# Changelog (ZappInfinit Fork)
 
-All notable changes to ZappInfinit are documented in this file. Updates are recorded here on every release.
-
-# V0.21.4.0beta
-
-## Build & Packaging
-* **UPX Compression Re-enabled:** Re-enabled UPX binary compression in `build.py` (was disabled by `--noupx`). The build now locates the WinGet-installed UPX toolchain and compresses the onedir collection while excluding the Python runtime DLLs (`python314.dll`, `python3.dll`), `.pyd` extension modules, and the `accessible_output2` screen-reader DLLs loaded via `ctypes` — UPX packing corrupts `ZDSRAPI_x64.dll` and crashes the app on startup with an access violation. Smaller installer/portable payload.
-
-## Audio
-* **BASS plugin resolution in dev mode:** `_load_bass_plugin()` now also searches `sound_lib`'s own bundled plugin directory (`sound_lib/external/paths.py` x64/x86), so `bass_aac.dll` resolves correctly in dev mode instead of only through the app-specific `client/lib` pair.
-* **BASS_ERROR_ALREADY treated as success:** A plugin that is already registered (because `pybassopus`/`pybass_aac` call `BASS_PluginLoad` at import time) no longer logs a misleading "not loaded" warning — the codec is available either way.
-* **Dead `bass_opus.dll` fallback removed:** `start()` no longer tries the non-existent `bass_opus.dll` as a second Opus plugin name; only the real `bassopus.dll` is attempted.
-
----
+All notable changes to this fork of ZappInfinit are documented in this file.
 
 # V2026.06.21.1555
 
@@ -27,10 +15,106 @@ All notable changes to ZappInfinit are documented in this file. Updates are reco
 # V2026.06.21.1450
 
 ## Upstream Synchronization & Merge
-* **PyQt/wxPython UI Enhancements:** Merged client UI enhancements, including the new playing voice note audio controls visualization in the conversations list.
-* **WPPConnect Mentions Integration:** Integrated the new `@mention` suggestion panel and `mentioned_jids` arguments in `send_text_message` with WPPConnect Server's `/api/:session/send-mentioned` routing (with robust fallback to standard sending on failure).
+* **PyQt/wxPython Upstream Enhancements:** Merged upstream PyQt/wx client UI enhancements, including the new playing voice note audio controls visualization in the conversations list.
+* **WPPConnect Mentions Integration:** Integrated the new upstream `@mention` suggestion panel and `mentioned_jids` arguments in `send_text_message` with WPPConnect Server's `/api/:session/send-mentioned` routing (with robust fallback to standard sending on failure).
 * **Silent Disconnection Handling:** Replaced blocking error popups during transient network disconnections with silent status bar notifications and automatic Socket.IO reconnection loops to prevent UI freezes.
 * **Debounced Data Saves:** Coalesced rapid message writes using a thread-safe `_save_lock` and a `150ms` debounced timer (`_schedule_save`) to prevent `messages.dat` file corruption during bulk syncs.
 * **Accessibility Overrides (NVDA):** Preserved local list focus and selection guards (e.g. clearing focus state before DeleteAllItems) to prevent stuttering and COM errors on screen readers.
 
 ---
+
+# V2026.06.20.0312
+
+## Port Refactor
+* **Port Uniformity:** Changed the default local API port from `3417` to `6300` in client configurators, settings menus, and startup launchers to align with local WPPConnect Server setups.
+
+---
+
+# V2026.06.18.1742
+
+## @lid JID Name Resolution & Caching
+* **Background LID to Phone Resolution:** Implemented background queries utilizing `/contact/fetchProfile` to map linked device JIDs (`@lid`) to real phone numbers and contact names, resolving blank contacts.
+* **Local Mapping Cache:** Added a local JID mapper cache (`_lid_to_phone` and `_phone_to_lid`) that is encrypted and stored in `messages.dat` on shutdown.
+* **Real-time Chat Merging:** Implemented real-time message merging and unread count accumulation, deduplicating and merging `@lid` chats directly into `@s.whatsapp.net` entries at startup and on incoming events.
+* **Placeholder Name Filtering:** Prevented resolved placeholders (e.g. "Contato sem nome") from overwriting valid contact names.
+* **Brazilian 9-Digit Interchangeability:** Added support for matching phone numbers with and without the 9th digit interchangeably.
+
+## Contact Synchronization Overhaul
+* **Contact Update Merging:** Replaced raw contact overwrites with safe merging (`self.contacts.update`) to prevent active background syncs from wiping out previously resolved contact names.
+* **Selective Contact Queries:** Reverted the contact download endpoint to GET `/contact/findContacts` and integrated selective incremental updates to minimize API overhead.
+* **Contact Type Filtering:** Explicitly filtered contact list data by `type == contact` to keep parity with the original codebase.
+
+## Startup & WebSocket Stability
+* **Connection State Verification:** Implemented a direct HTTP connection query during client initialization to resolve startup race conditions and prevent redundant websocket connections.
+* **Registry Autostart Synchronization:** Synced the Windows registry autostart keys with client configuration options on startup to prevent duplicate prompts during reinstallations.
+* **Archived Status Sync:** Synchronized chat archives status changes via websocket `chats.update` events and local settings during normalization.
+* **Log Redirection:** Redirected all evolution logs to the client logs directory.
+* **Platform Guards:** Guarded Windows-specific `ctypes` and subprocess flags behind platform checks to support safer multi-platform script execution.
+
+---
+
+# V2026.06.17.2340
+
+## WebSocket & API Connection
+* **Evolution API WebSocket Activation:** Configured `WEBSOCKET_ENABLED=true` and `WEBSOCKET_GLOBAL_EVENTS=true` in the local launcher (`start.js`) to ensure the Socket.IO server initializes correctly, resolving `404 Not Found` connection failures during client startup.
+
+## Maximum Verbosity Logging ("logs no talo")
+* **Deep Level Logging (DEBUG):** Upgraded the entire Python client log level to `DEBUG` and redirected all standard output (`sys.stdout`) to `logging.DEBUG` to capture every print.
+* **Network & WebSocket Tracing:** Explicitly forced all HTTP (`requests`, `urllib3`) and Socket.IO/Engine.IO loggers to `DEBUG` level.
+* **Full Socket.IO Packet Logging:** Enabled `logger=True` and `engineio_logger=True` on the Socket.IO client constructor to record all incoming/outgoing websocket packets, events, payload contents, and keep-alive heartbeats.
+
+---
+
+# V2026.06.17.2228
+
+## Critical App Bug Fixes
+* **Connection Initialization Crash:** Resolved a startup crash (`TypeError: Cannot read properties of undefined (reading 'state')`) by applying a defensive patch to the Baileys auth state and enabling PostgreSQL local database persistence by default.
+* **Force Update Feedback:** Fixed silent failures during manual update checks (Help > Force Update) to display a dialog explaining the network error or GitHub rate limits.
+
+## Database & API Integration
+* **Local Database Persistence:** Enabled database saving by default in the API boot script (`start.js`) so that instance credentials and chat history persist correctly in PostgreSQL (`DATABASE_SAVE_DATA_INSTANCE=true`).
+* **Automated Patching:** Integrated all Baileys and Evolution API patch scripts (quoted context, pairing time, mark read, auth state) into the automated GitHub Actions release workflow.
+
+## Client Logging System
+* **Persistent Logs:** Added a client logging module writing to `logs/log.log` to track runtime traces, request errors, and detailed updater exception tracebacks for troubleshooting.
+
+## CI/CD & Automation
+* **Workflow Concurrency Control:** Added concurrency settings in GitHub Actions to automatically cancel any in-progress runs when a new push is received, preventing duplicate builds and race conditions.
+
+---
+
+# V2026.06.17.2208
+
+## CI/CD & Automation
+* **Automated Release Pipeline:** Implemented a full GitHub Actions workflow (`release.yml`) running on Windows Server to compile and publish ready-to-run releases on every push to the `main` branch.
+* **Date-Based Versioning:** Switched to automatic UTC date/time versioning (`YYYY.MM.DD.HHMM`, e.g., `2026.06.17.2208`) to prevent loop updates.
+* **Structured Action Caches:** Added cache scopes for MSYS2, Python pip dependencies, Node.js binaries, and `node_modules` to speed up remote compilation.
+
+## User Interface
+* **Interface Cleanup:** Removed the "What's New" dialog (`WhatsNewDialog`) and changelog buttons from the updater interface to streamline startup.
+
+---
+
+# V0.11.0.1
+
+## Auto-Updater System
+* **GitHub Release Integration:** Re-engineered the updater to query GitHub Releases API directly, fetching tags and release notes natively without needing extra files.
+* **File Lock Resolution:** Added dynamic process termination routines in the updater script to close PostgreSQL (port 5433) and Evolution API (port 6300) connections, preventing "Access Denied" errors during files overwrite.
+
+## Compilation & Packaging
+* **PyInstaller Migration:** Replaced the legacy Nuitka compiler with PyInstaller (`build.py`) for builds packaging.
+* **Library DLL Bundling:** Restructured packaging of critical dynamic sound DLLs (BASS) and screen readers (`accessible-output2`) to prevent runtime crashes.
+* **Custom Installer Stub:** Optimized the C stub installer (`installer.c`) to extract payload files and register uninstallation entries on Windows.
+
+## Development Setup
+* **Dependencies Preservation:** Updated `setup_api.py` to preserve the `node_modules` folder, maintaining a local NPM cache during checkout operations.
+
+---
+
+# V0.10.0.0
+
+## Client Stabilization
+* **Dialogue Error Fix:** Fixed an `AttributeError` in the connection dialog (`connection_dial`) occurring during WebSocket disconnections.
+* **LID JID Compatibility:** Added support for linked device JIDs (`@lid`), resolving blank contact and conversation names.
+* **Group Formatting:** Prevented group JIDs from being incorrectly parsed as standard phone numbers.
+* **Updater Redirection:** Updated all download endpoints to target `mhcauduro/ZappInfinit`.

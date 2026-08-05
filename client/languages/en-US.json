@@ -332,7 +332,7 @@
     "reacted_with_emoji": "{name}, reacted with {emoji}.",
     "show_msg_text": "Show message text in PopUp",
     "terms_title": "ZappInfinit | Important notice",
-    "terms_message": "Warning: this application is not officially developed, supported, or endorsed by Meta. ZappInfinit is a WhatsApp client focused primarily on accessibility for blind users. By continuing, you agree that this application is not official from Meta and that the developer is not responsible for the use of the application or for any consequences of its use.",
+    "terms_message": "Warning: this application is not officially developed, supported, or endorsed by Meta. ZappInfinit is an open-source WhatsApp client focused primarily on accessibility for blind users. By continuing, you agree that this application is not official from Meta and that the developer Matheus Cauduro is not responsible for any consequences of its use.",
     "terms_accept": "&Accept",
     "terms_decline": "&Decline",
     "date_fmt": "%m/%d/%Y",

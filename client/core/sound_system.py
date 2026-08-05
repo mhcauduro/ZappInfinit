@@ -56,16 +56,6 @@ class SoundSystem:
             candidates_dirs += [sys._MEIPASS, os.path.join(sys._MEIPASS, 'lib')]
         _src_lib = os.path.join(os.path.dirname(__file__), '..', 'lib')
         candidates_dirs.append(os.path.normpath(_src_lib))
-        # sound_lib's own bundled BASS plugin DLLs (lib/<arch>/ — where
-        # pybassopus/pybass_aac pull theirs from via libloader). client/lib
-        # only carries the app-specific bassopus.dll/libopus-0.dll pair, so
-        # without this bass_aac.dll could never be resolved in dev mode.
-        try:
-            import sound_lib.external.paths as _sl_paths
-            _is_64 = sys.maxsize > 2 ** 32
-            candidates_dirs.append(_sl_paths.x64_path if _is_64 else _sl_paths.x86_path)
-        except Exception:
-            pass
 
         logging.info("[sound_system] Looking for %s in: %s", dll_name, candidates_dirs)
 
@@ -141,14 +131,6 @@ class SoundSystem:
                         err = bass_dll.BASS_ErrorGetCode()
                     except Exception:
                         err = "?"
-                    # BASS_ERROR_ALREADY (14): the plugin is already registered
-                    # — pybassopus/pybass_aac call BASS_PluginLoad at import
-                    # time, before Output() initialises the device. That is a
-                    # success, not a failure: the codec is available either
-                    # way, so don't log the misleading "not loaded" warning.
-                    if err == 14:
-                        logging.info("[sound_system] %s already registered (BASS_ERROR_ALREADY)", path)
-                        return True
                     logging.warning("[sound_system] BASS_PluginLoad=0 for %s (BASS error=%s)", path, err)
             except Exception as _ex:
                 logging.warning("[sound_system] BASS_PluginLoad exception for %s: %s", path, _ex)
@@ -171,7 +153,7 @@ class SoundSystem:
         self.enabled = True
         self.output = sound_lib.output.Output()
         # Load BASS plugins AFTER Output() so BASS device is initialised
-        opus_loaded = self._load_bass_plugin('bassopus.dll')
+        opus_loaded = self._load_bass_plugin('bassopus.dll') or self._load_bass_plugin('bass_opus.dll')
         if not opus_loaded and _pybassopus is not None:
             try:
                 if hasattr(_pybassopus, "BASS_OpusInit"):

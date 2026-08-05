@@ -32,9 +32,9 @@ def _load_dotenv():
 _load_dotenv()
 
 # ── Update source: GitHub Releases ───────────────────────────────────────────
-# Override ZAPPINFIT_GITHUB_REPO in .env to point at a fork.
+# Override ZAPPINFINIT_GITHUB_REPO in .env to point at a fork.
 
-GITHUB_REPO = os.environ.get("ZAPPINFIT_GITHUB_REPO", "mhcauduro/ZappInfinit")
+GITHUB_REPO = os.environ.get("ZAPPINFINIT_GITHUB_REPO", "mhcauduro/ZappInfinit")
 GITHUB_API_LATEST_RELEASE = (
     f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 )

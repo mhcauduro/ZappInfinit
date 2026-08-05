@@ -332,7 +332,7 @@
     "reacted_with_emoji": "{name}, reagiu com {emoji}.",
     "show_msg_text": "Mostrar o texto da mensagem numa janela pop-up",
     "terms_title": "ZappInfinit | Aviso importante",
-    "terms_message": "Atenção: Esta aplicação não é oficialmente desenvolvida, suportada nem recomendada pela Meta. O ZappInfinit é um cliente do WhatsApp centrado principalmente na acessibilidade para utilizadores cegos. Ao continuar, concorda que esta aplicação não é oficial da Meta e que o desenvolvedor não se responsabiliza pela utilização da aplicação nem por quaisquer consequências decorrentes dessa utilização.",
+    "terms_message": "Atenção: Esta aplicação não é oficialmente desenvolvida, suportada nem recomendada pela Meta. O ZappInfinit é um cliente do WhatsApp de código aberto que se centra principalmente na acessibilidade para utilizadores cegos. Ao continuar, concorda que esta aplicação não é oficial da Meta e que o desenvolvedor Matheus Cauduro não se responsabiliza por quaisquer consequências decorrentes da sua utilização.",
     "terms_accept": "&Aceitar",
     "terms_decline": "&Recusar",
     "date_fmt": "%d/%m/%Y",
